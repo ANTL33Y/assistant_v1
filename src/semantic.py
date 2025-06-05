@@ -1,5 +1,5 @@
 from src.logging import get_logger
-from typing import List, Optional
+from typing import List, Optional, Any
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -10,7 +10,16 @@ except ImportError:
 
 
 class SemanticMemory:
-    def __init__(self, memory, settings):
+    """
+    Handles semantic embedding and recall of facts using sentence transformers.
+    """
+    def __init__(self, memory: Any, settings: Any) -> None:
+        """
+        Initialize the semantic memory system.
+        Args:
+            memory: The memory object for persistent storage.
+            settings: The configuration/settings object.
+        """
         self.memory = memory
         self.cfg = settings
         self.semantic_model = None
@@ -29,11 +38,25 @@ class SemanticMemory:
                 self.semantic_model = None
 
     def embed_fact(self, fact_text: str) -> Optional[List[float]]:
+        """
+        Embed a fact string into a vector using the semantic model.
+        Args:
+            fact_text (str): The fact to embed.
+        Returns:
+            Optional[List[float]]: The embedding vector, or None if unavailable.
+        """
         if self.semantic_model:
             return self.semantic_model.encode(fact_text).tolist()
         return None
 
     def recall_facts(self, topic: Optional[str] = None) -> str:
+        """
+        Recall facts from memory, optionally filtered by semantic similarity to a topic.
+        Args:
+            topic (Optional[str]): The topic to filter facts by.
+        Returns:
+            str: Recalled facts or a message if none found.
+        """
         facts_dict = self.memory.data.get("learned_facts", {})
         if not facts_dict:
             return "I haven't learned any specific facts yet."

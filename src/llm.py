@@ -1,4 +1,5 @@
 from src.logging import get_logger
+from typing import Any, Tuple
 
 try:
     import openai
@@ -7,7 +8,16 @@ except ImportError:
 
 
 class LLMClient:
-    def __init__(self, settings, memory):
+    """
+    Handles interaction with the language model (LLM) provider (e.g., OpenAI).
+    """
+    def __init__(self, settings: Any, memory: Any) -> None:
+        """
+        Initialize the LLM client.
+        Args:
+            settings: The configuration/settings object.
+            memory: The memory object for persistent storage.
+        """
         self.cfg = settings
         self.memory = memory
         self.openai_client = None
@@ -16,7 +26,14 @@ class LLMClient:
             self.openai_client = openai.OpenAI(api_key=self.cfg.openai_api_key)
             self.logger.info("OpenAI client initialized.")
 
-    def process(self, cmd: str) -> (str, bool):
+    def process(self, cmd: str) -> Tuple[str, bool]:
+        """
+        Process a user command using the LLM.
+        Args:
+            cmd (str): The user command.
+        Returns:
+            Tuple[str, bool]: (response, continue_flag)
+        """
         self.memory.append("user_command", cmd, cmd)
         if not self.openai_client:
             return (

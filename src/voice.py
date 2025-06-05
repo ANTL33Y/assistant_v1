@@ -3,6 +3,7 @@ from src.logging import get_logger
 import requests
 import pygame
 import speech_recognition as sr
+from typing import Any
 
 try:
     import pyttsx3
@@ -11,7 +12,15 @@ except ImportError:
 
 
 class VoiceIO:
-    def __init__(self, settings):
+    """
+    Handles voice input (speech recognition) and output (TTS) for the assistant.
+    """
+    def __init__(self, settings: Any) -> None:
+        """
+        Initialize the voice I/O system.
+        Args:
+            settings: The configuration/settings object.
+        """
         self.cfg = settings
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
@@ -19,6 +28,11 @@ class VoiceIO:
         self.logger = get_logger(__name__)
 
     def speak(self, text: str) -> None:
+        """
+        Speak the given text using ElevenLabs TTS or fallback to pyttsx3.
+        Args:
+            text (str): The text to speak.
+        """
         self.logger.info("AI: %s", text)
         if self.cfg.api_key:
             try:
@@ -57,6 +71,11 @@ class VoiceIO:
             self.logger.warning("No TTS engine available. Text will not be spoken.")
 
     def listen(self) -> str:
+        """
+        Listen for speech and return the recognized text (lowercased).
+        Returns:
+            str: The recognized speech as text, or an empty string on failure.
+        """
         with self.microphone as src:
             self.recognizer.adjust_for_ambient_noise(
                 src, duration=self.cfg.ambient_adjust_sec

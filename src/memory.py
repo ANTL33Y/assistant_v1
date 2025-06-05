@@ -1,19 +1,33 @@
 import json
+import datetime as dt
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from src.logging import get_logger
 
 
 class Memory:
-    """Simple JSON‑backed persistent store."""
+    """
+    Simple JSON‑backed persistent store for user preferences, interactions, and learned facts.
+    """
 
     def __init__(self, path: Path, max_interactions: int = 100) -> None:
+        """
+        Initialize the memory store.
+        Args:
+            path (Path): Path to the memory file.
+            max_interactions (int): Maximum number of interactions to keep in memory.
+        """
         self.path = path
         self.max_interactions = max_interactions
         self.data: Dict[str, Any] = self._load()
         self.logger = get_logger(__name__)
 
     def _load(self) -> Dict[str, Any]:
+        """
+        Load memory from disk, or initialize if missing/corrupted.
+        Returns:
+            Dict[str, Any]: The loaded or default memory structure.
+        """
         if self.path.exists():
             try:
                 with self.path.open("r", encoding="utf-8") as fh:
@@ -29,6 +43,9 @@ class Memory:
         }
 
     def save(self) -> None:
+        """
+        Persist memory to disk atomically.
+        """
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(json.dumps(self.data, indent=2), encoding="utf-8")
         tmp.replace(self.path)
@@ -37,8 +54,15 @@ class Memory:
         self,
         interaction_type: str,
         content: str,
-        user_input: str | None = None,
+        user_input: Optional[str] = None,
     ) -> None:
+        """
+        Append an interaction to memory and persist.
+        Args:
+            interaction_type (str): The type of interaction (e.g., 'user_command', 'ai_response').
+            content (str): The content of the interaction.
+            user_input (Optional[str]): The original user input, if any.
+        """
         self.data.setdefault("interactions", []).append(
             {
                 "timestamp": dt.datetime.now().isoformat(),

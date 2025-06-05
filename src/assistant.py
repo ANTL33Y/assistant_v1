@@ -20,7 +20,16 @@ except ImportError:
     DDGS = None
 
 class PersonalAI:
-    def __init__(self, cfg: Settings = Settings()):
+    """
+    The main orchestrator for the modular voice assistant.
+    Handles command processing, plugin management, and integration with memory, LLM, and voice I/O.
+    """
+    def __init__(self, cfg: Settings = Settings()) -> None:
+        """
+        Initialize the PersonalAI assistant.
+        Args:
+            cfg (Settings): The runtime configuration.
+        """
         self.cfg = cfg
         self.memory = Memory(cfg.memory_path, cfg.max_interactions)
         self.voice = VoiceIO(cfg)
@@ -33,12 +42,21 @@ class PersonalAI:
         self._load_plugins()
 
     def _get_current_time(self) -> str:
+        """Return the current time as a formatted string."""
         return dt.datetime.now().strftime("%I:%M %p")
 
     def _get_current_date(self) -> str:
+        """Return the current date as a formatted string."""
         return dt.datetime.now().strftime("%A, %B %d, %Y")
 
     def _open_application(self, app_name: str) -> str:
+        """
+        Attempt to open a known application by name.
+        Args:
+            app_name (str): The name of the application to open.
+        Returns:
+            str: Result message.
+        """
         try:
             app_name_lower = app_name.lower()
             if "notepad" in app_name_lower:
@@ -57,6 +75,13 @@ class PersonalAI:
             return f"Sorry, I encountered an error trying to open {app_name}."
 
     def _remember_user_name(self, name: str) -> str:
+        """
+        Store the user's name in memory.
+        Args:
+            name (str): The user's name.
+        Returns:
+            str: Result message.
+        """
         try:
             if not name or not isinstance(name, str) or len(name.strip()) == 0:
                 return "Please provide a valid name to remember."
@@ -68,12 +93,24 @@ class PersonalAI:
             return "Sorry, I had trouble remembering that name."
 
     def _recall_user_name(self) -> str:
+        """
+        Recall the user's name from memory.
+        Returns:
+            str: The user's name or a message if unknown.
+        """
         name = self.memory.data.get("user_preferences", {}).get("name")
         if name:
             return f"Your name is {name}."
         return "I don't believe I know your name yet."
 
     def _remember_fact(self, fact: str) -> str:
+        """
+        Store a fact in memory with semantic embedding.
+        Args:
+            fact (str): The fact to remember.
+        Returns:
+            str: Result message.
+        """
         try:
             if not fact or not isinstance(fact, str) or len(fact.strip()) == 0:
                 return "Please provide a valid fact to remember."
@@ -92,9 +129,21 @@ class PersonalAI:
             return "Sorry, I had trouble remembering that fact."
 
     def _recall_facts(self, topic: str | None = None) -> str:
+        """
+        Recall facts from memory, optionally filtered by topic.
+        Args:
+            topic (str | None): Optional topic to filter facts.
+        Returns:
+            str: Recalled facts or a message if none found.
+        """
         return self.semantic.recall_facts(topic)
 
     def _lock_computer(self) -> str:
+        """
+        Lock the computer workstation.
+        Returns:
+            str: Result message.
+        """
         try:
             self._system_action("lock")
             return "Locking the computer now."
@@ -103,6 +152,13 @@ class PersonalAI:
             return "Sorry, I encountered an error trying to lock the computer."
 
     def _search_web(self, query: str) -> str:
+        """
+        Perform a web search using DuckDuckGo.
+        Args:
+            query (str): The search query.
+        Returns:
+            str: Search results or error message.
+        """
         if not DDGS:
             return "Web search functionality is not available. The DDGS library is missing."
         if not query or not isinstance(query, str) or len(query.strip()) == 0:
@@ -120,6 +176,11 @@ class PersonalAI:
             return f"Sorry, I encountered an error while searching the web for '{query}'."
 
     def _system_action(self, key: str) -> None:
+        """
+        Perform a system action (open app, lock, etc.) by key.
+        Args:
+            key (str): The action key.
+        """
         if key == "notepad":
             subprocess.Popen(["notepad.exe"])
         elif key == "calculator":
@@ -129,7 +190,11 @@ class PersonalAI:
         elif key == "lock":
             os.system("rundll32.exe user32.dll,LockWorkStation")
 
-    def _load_plugins(self):
+    def _load_plugins(self) -> None:
+        """
+        Dynamically discover and load plugins from the plugins directory.
+        Registers plugin commands for dispatch.
+        """
         package = 'src.plugins'
         for _, modname, ispkg in pkgutil.iter_modules([os.path.join(os.path.dirname(__file__), 'plugins')]):
             if ispkg or modname == 'base':
@@ -144,6 +209,13 @@ class PersonalAI:
                         self.commands[cmd] = handler
 
     def _process(self, cmd: str) -> bool:
+        """
+        Process a user command, dispatching to plugins or core tools/LLM as needed.
+        Args:
+            cmd (str): The user command.
+        Returns:
+            bool: True to continue, False to terminate session.
+        """
         # Check for plugin command
         cmd_lower = cmd.lower().strip()
         for command, handler in self.commands.items():
@@ -250,6 +322,9 @@ class PersonalAI:
             return True
 
     def run(self) -> None:
+        """
+        Main loop: listens for user input and processes commands until exit.
+        """
         self.voice.speak("Personal AI online.")
         while True:
             heard = self.voice.listen()
