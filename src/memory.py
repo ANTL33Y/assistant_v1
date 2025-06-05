@@ -1,7 +1,7 @@
 import json
 import datetime as dt
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from src.logging import get_logger
 
 
@@ -73,4 +73,34 @@ class Memory:
         )
         if len(self.data["interactions"]) > self.max_interactions:
             self.data["interactions"] = self.data["interactions"][-self.max_interactions:]
-        self.save() 
+        self.save()
+
+    def add_reminder(self, text: str, when: dt.datetime) -> None:
+        """Store a reminder in memory."""
+        self.data.setdefault("reminders", []).append(
+            {
+                "id": dt.datetime.now().isoformat(),
+                "text": text,
+                "time": when.isoformat(),
+            }
+        )
+        self.save()
+
+    def pop_due_reminders(self, now: Optional[dt.datetime] = None) -> List[Dict[str, Any]]:
+        """Return and remove reminders that are due."""
+        now = now or dt.datetime.now()
+        due = []
+        remaining = []
+        for rem in self.data.get("reminders", []):
+            try:
+                rem_time = dt.datetime.fromisoformat(rem.get("time"))
+            except Exception:
+                rem_time = now
+            if rem_time <= now:
+                due.append(rem)
+            else:
+                remaining.append(rem)
+        if due:
+            self.data["reminders"] = remaining
+            self.save()
+        return due
