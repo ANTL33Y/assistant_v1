@@ -10,6 +10,9 @@ from src.memory import Memory
 from src.voice import VoiceIO
 from src.llm import LLMClient
 from src.semantic import SemanticMemory
+import importlib
+import pkgutil
+from src.plugins.base import AssistantPlugin
 
 try:
     from duckduckgo_search import DDGS
@@ -25,6 +28,9 @@ class PersonalAI:
         self.semantic = SemanticMemory(self.memory, cfg)
         self.logger = get_logger(__name__)
         self.logger.info("Assistant ready – say a wake word to begin.")
+        self.plugins = {}
+        self.commands = {}
+        self._load_plugins()
 
     def _get_current_time(self) -> str:
         return dt.datetime.now().strftime("%I:%M %p")
@@ -123,7 +129,29 @@ class PersonalAI:
         elif key == "lock":
             os.system("rundll32.exe user32.dll,LockWorkStation")
 
+    def _load_plugins(self):
+        package = 'src.plugins'
+        for _, modname, ispkg in pkgutil.iter_modules([os.path.join(os.path.dirname(__file__), 'plugins')]):
+            if ispkg or modname == 'base':
+                continue
+            module = importlib.import_module(f'src.plugins.{modname}')
+            for attr in dir(module):
+                obj = getattr(module, attr)
+                if isinstance(obj, type) and issubclass(obj, AssistantPlugin) and obj is not AssistantPlugin:
+                    plugin = obj()
+                    self.plugins[plugin.name] = plugin
+                    for cmd, handler in plugin.register().items():
+                        self.commands[cmd] = handler
+
     def _process(self, cmd: str) -> bool:
+        # Check for plugin command
+        cmd_lower = cmd.lower().strip()
+        for command, handler in self.commands.items():
+            if command in cmd_lower:
+                result = handler(cmd)
+                self.voice.speak(str(result))
+                self.memory.append("plugin_response", str(result))
+                return True
         self.memory.append("user_command", cmd, cmd)
         if not self.llm.openai_client:
             self.voice.speak("My advanced thinking capabilities are offline. Please configure the OpenAI API key.")
