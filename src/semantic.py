@@ -1,4 +1,4 @@
-import logging
+from src.logging import get_logger
 from typing import List, Optional
 
 try:
@@ -14,14 +14,15 @@ class SemanticMemory:
         self.memory = memory
         self.cfg = settings
         self.semantic_model = None
+        self.logger = get_logger(__name__)
         if SentenceTransformer:
             try:
                 self.semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
-                logging.info(
+                self.logger.info(
                     "SentenceTransformer model loaded for semantic search."
                 )
             except Exception as e:
-                logging.warning(
+                self.logger.warning(
                     f"Failed to load SentenceTransformer model: {e}. "
                     "Semantic fact recall will be degraded."
                 )

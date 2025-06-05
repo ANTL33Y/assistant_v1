@@ -1,5 +1,5 @@
 import io
-import logging
+from src.logging import get_logger
 import requests
 import pygame
 import speech_recognition as sr
@@ -16,9 +16,10 @@ class VoiceIO:
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
         pygame.mixer.init()
+        self.logger = get_logger(__name__)
 
     def speak(self, text: str) -> None:
-        logging.info("AI: %s", text)
+        self.logger.info("AI: %s", text)
         if self.cfg.api_key:
             try:
                 resp = requests.post(
@@ -45,7 +46,7 @@ class VoiceIO:
                     pygame.time.wait(120)
                 return
             except Exception as exc:
-                logging.warning(
+                self.logger.warning(
                     "ElevenLabs TTS failed: %s – using offline engine", exc
                 )
         if pyttsx3:
@@ -53,7 +54,7 @@ class VoiceIO:
             engine.say(text)
             engine.runAndWait()
         else:
-            logging.warning("No TTS engine available. Text will not be spoken.")
+            self.logger.warning("No TTS engine available. Text will not be spoken.")
 
     def listen(self) -> str:
         with self.microphone as src:
@@ -70,5 +71,5 @@ class VoiceIO:
             except (sr.WaitTimeoutError, sr.UnknownValueError):
                 return ""
             except sr.RequestError as err:
-                logging.error("Speech recognition error: %s", err)
+                self.logger.error("Speech recognition error: %s", err)
                 return "" 

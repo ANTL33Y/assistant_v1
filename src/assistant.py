@@ -1,4 +1,4 @@
-import logging
+from src.logging import get_logger
 import datetime as dt
 import os
 import subprocess
@@ -23,8 +23,8 @@ class PersonalAI:
         self.voice = VoiceIO(cfg)
         self.llm = LLMClient(cfg, self.memory)
         self.semantic = SemanticMemory(self.memory, cfg)
-        logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
-        logging.info("Assistant ready – say a wake word to begin.")
+        self.logger = get_logger(__name__)
+        self.logger.info("Assistant ready – say a wake word to begin.")
 
     def _get_current_time(self) -> str:
         return dt.datetime.now().strftime("%I:%M %p")
@@ -47,7 +47,7 @@ class PersonalAI:
             else:
                 return f"Sorry, I don't know how to open '{app_name}'. Application not recognized."
         except Exception as e:
-            logging.error(f"Error opening application {app_name}: {e}")
+            self.logger.error(f"Error opening application {app_name}: {e}")
             return f"Sorry, I encountered an error trying to open {app_name}."
 
     def _remember_user_name(self, name: str) -> str:
@@ -58,7 +58,7 @@ class PersonalAI:
             self.memory.save()
             return f"Okay, I'll remember your name is {name.strip()}."
         except Exception as e:
-            logging.error(f"Error remembering user name '{name}': {e}")
+            self.logger.error(f"Error remembering user name '{name}': {e}")
             return "Sorry, I had trouble remembering that name."
 
     def _recall_user_name(self) -> str:
@@ -82,7 +82,7 @@ class PersonalAI:
             self.memory.save()
             return f"Okay, I've remembered that: {fact_text}"
         except Exception as e:
-            logging.error(f"Error remembering fact '{fact}': {e}")
+            self.logger.error(f"Error remembering fact '{fact}': {e}")
             return "Sorry, I had trouble remembering that fact."
 
     def _recall_facts(self, topic: str | None = None) -> str:
@@ -93,7 +93,7 @@ class PersonalAI:
             self._system_action("lock")
             return "Locking the computer now."
         except Exception as e:
-            logging.error(f"Error locking computer: {e}")
+            self.logger.error(f"Error locking computer: {e}")
             return "Sorry, I encountered an error trying to lock the computer."
 
     def _search_web(self, query: str) -> str:
@@ -102,7 +102,7 @@ class PersonalAI:
         if not query or not isinstance(query, str) or len(query.strip()) == 0:
             return "Please provide a valid search query."
         try:
-            logging.info(f"Performing web search for: {query}")
+            self.logger.info(f"Performing web search for: {query}")
             with DDGS() as ddgs:
                 results = list(ddgs.text(query, max_results=3))
             if not results:
@@ -110,7 +110,7 @@ class PersonalAI:
             snippets = [f"{r['title']}: {r['body']}" for r in results]
             return "Here's what I found on the web:\n" + "\n\n".join(snippets)
         except Exception as e:
-            logging.error(f"Error during web search for '{query}': {e}")
+            self.logger.error(f"Error during web search for '{query}': {e}")
             return f"Sorry, I encountered an error while searching the web for '{query}'."
 
     def _system_action(self, key: str) -> None:
@@ -217,7 +217,7 @@ class PersonalAI:
             self.memory.append("ai_response", ai_text_response)
             return True
         except Exception as e:
-            logging.error(f"LLM processing error: {e}")
+            self.logger.error(f"LLM processing error: {e}")
             self.voice.speak("I seem to have trouble thinking right now. Please try again.")
             return True
 

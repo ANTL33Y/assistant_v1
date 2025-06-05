@@ -1,4 +1,4 @@
-import logging
+from src.logging import get_logger
 
 try:
     import openai
@@ -11,9 +11,10 @@ class LLMClient:
         self.cfg = settings
         self.memory = memory
         self.openai_client = None
+        self.logger = get_logger(__name__)
         if self.cfg.openai_api_key and openai:
             self.openai_client = openai.OpenAI(api_key=self.cfg.openai_api_key)
-            logging.info("OpenAI client initialized.")
+            self.logger.info("OpenAI client initialized.")
 
     def process(self, cmd: str) -> (str, bool):
         self.memory.append("user_command", cmd, cmd)

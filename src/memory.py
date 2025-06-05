@@ -1,8 +1,7 @@
 import json
-import logging
-import datetime as dt
 from pathlib import Path
 from typing import Any, Dict
+from src.logging import get_logger
 
 
 class Memory:
@@ -12,6 +11,7 @@ class Memory:
         self.path = path
         self.max_interactions = max_interactions
         self.data: Dict[str, Any] = self._load()
+        self.logger = get_logger(__name__)
 
     def _load(self) -> Dict[str, Any]:
         if self.path.exists():
@@ -19,7 +19,7 @@ class Memory:
                 with self.path.open("r", encoding="utf-8") as fh:
                     return json.load(fh)
             except json.JSONDecodeError:
-                logging.warning("Memory file corrupted – starting fresh.")
+                self.logger.warning("Memory file corrupted – starting fresh.")
         return {
             "user_preferences": {},
             "interactions": [],
