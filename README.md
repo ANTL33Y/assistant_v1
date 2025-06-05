@@ -88,6 +88,17 @@ class WeatherPlugin(AssistantPlugin):
         return "The weather is sunny and 25°C."
 ```
 
+### Built-in Reminder Plugin
+
+This repository also ships with a simple `ReminderPlugin` allowing you to schedule spoken reminders.
+Use a command such as:
+
+```
+remind me to buy milk at 6pm
+```
+
+The assistant will speak the reminder at the requested time while running.
+
 ## Usage
 
 Run the main script:

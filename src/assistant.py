@@ -204,6 +204,11 @@ class PersonalAI:
                 obj = getattr(module, attr)
                 if isinstance(obj, type) and issubclass(obj, AssistantPlugin) and obj is not AssistantPlugin:
                     plugin = obj()
+                    if hasattr(plugin, "setup"):
+                        try:
+                            plugin.setup(self)
+                        except TypeError:
+                            pass
                     self.plugins[plugin.name] = plugin
                     for cmd, handler in plugin.register().items():
                         self.commands[cmd] = handler
@@ -327,6 +332,8 @@ class PersonalAI:
         """
         self.voice.speak("Personal AI online.")
         while True:
+            for rem in self.memory.pop_due_reminders():
+                self.voice.speak(f"Reminder: {rem['text']}")
             heard = self.voice.listen()
             if not heard:
                 continue

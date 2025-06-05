@@ -8,6 +8,10 @@ class AssistantPlugin:
     name: str = "BasePlugin"
     description: str = "Base plugin class."
 
+    def setup(self, assistant: Any) -> None:  # type: ignore[empty-body]
+        """Optional initialization with the assistant instance."""
+        return None
+
     def register(self) -> Dict[str, Callable[[str, Any], Any]]:
         """
         Return a dict mapping command names to handler functions.
