@@ -1,8 +1,5 @@
-// @ts-check
-import plugin from 'tailwindcss/plugin'
-
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
@@ -23,11 +20,14 @@ export default {
       },
     },
   },
-  plugins: [plugin(function({ addUtilities }) {
-    addUtilities({
-      '.bg-chat-gradient': {
-        backgroundImage: 'radial-gradient(circle at top center, #0F1C29, #050B14)',
-      },
-    })
-  })],
+  plugins: [
+    require('tailwindcss/plugin')(function ({ addUtilities }) {
+      addUtilities({
+        '.bg-chat-gradient': {
+          backgroundImage:
+            'radial-gradient(circle at top center, #0F1C29, #050B14)',
+        },
+      })
+    }),
+  ],
 }
