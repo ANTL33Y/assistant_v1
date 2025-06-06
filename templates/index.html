@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Voice Assistant</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css" integrity="sha512-F0bnVpkgN1lZ8ljv7weZDJcVEg6L38tnSuwRt+Y9BAnQCK9gI0gbrUWId+jpj52aqEidkmu3Pvb5xKM5M0xX8w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background:#f6f8fa;font-family:Arial, sans-serif;margin:0;padding:0; }
-        #root { max-width:800px;margin:40px auto;padding:0 20px; }
-        .chat-box { border:1px solid #ddd;border-radius:8px;overflow:hidden; }
-        .messages { background:#fff;height:60vh;overflow-y:auto;padding:20px; }
-        .message { margin-bottom:10px; }
-        .message.user { text-align:right;color:#333; }
-        .message.ai { text-align:left;color:#444; }
-        .input-area { display:flex;border-top:1px solid #ddd; }
-        .input-area input { flex:1;padding:15px;border:none;font-size:1em; }
-        .input-area button { padding:15px 20px;background:#2f80ed;color:#fff;border:none;font-size:1em;cursor:pointer; }
+        body { font-family: 'Inter', sans-serif; }
+        .chat-scroll::-webkit-scrollbar { width: 8px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 6px; }
     </style>
 </head>
-<body>
-<div id="root"></div>
+<body class="bg-gradient-to-br from-slate-100 to-slate-200 min-h-screen flex flex-col">
+<header class="bg-white shadow">
+    <div class="max-w-3xl mx-auto py-4 px-4">
+        <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">Voice Assistant</h1>
+    </div>
+</header>
+<main class="flex-grow flex items-center justify-center">
+    <div id="root" class="w-full max-w-3xl p-4"></div>
+</main>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -29,7 +31,7 @@ function ChatApp(){
   React.useEffect(() => {
     fetch('/history').then(r=>r.json()).then(data=>{
       setMessages(data);
-      setTimeout(()=>{ scrollBottom(); }, 100);
+      setTimeout(scrollBottom, 100);
     });
   }, []);
 
@@ -55,13 +57,22 @@ function ChatApp(){
   };
 
   return (
-    <div className="chat-box">
-      <div className="messages" id="messages">
-        {messages.map((m,i)=>(<div key={i} className={`message ${m.type}`}>{m.content}</div>))}
+    <div className="h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden">
+      <div id="messages" className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+        {messages.map((m,i)=>(
+          <div key={i} className={`flex ${m.type==='user'?'justify-end':'justify-start'}`}>
+            <div className={
+              'px-4 py-2 rounded-xl max-w-[75%] text-sm ' +
+              (m.type==='user'?'bg-blue-600 text-white':'bg-gray-100 text-gray-900')
+            }>
+              {m.content}
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="input-area">
-        <input id="input" type="text" placeholder="Ask something..." autoComplete="off" onKeyDown={e=>e.key==='Enter'&&send()}/>
-        <button onClick={send}>Send</button>
+      <div className="border-t p-3 flex gap-2">
+        <input id="input" type="text" placeholder="Ask something..." autoComplete="off" onKeyDown={e=>e.key==='Enter'&&send()} className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button onClick={send} className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium hover:bg-blue-700">Send</button>
       </div>
     </div>
   );
