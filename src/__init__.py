@@ -1,1 +1,1 @@
-from .text_voice_io import TextVoiceIO
+"""Core assistant package."""
