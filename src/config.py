@@ -45,6 +45,7 @@ class Settings(BaseModel if USE_PYDANTIC else object):
     ambient_adjust_sec: float = 0.5
     listen_timeout: int = 10
     phrase_time_limit: int = 7
+    news_api_key: str = ""
 
     @property
     def tts_url(self) -> str:
@@ -66,6 +67,7 @@ class Settings(BaseModel if USE_PYDANTIC else object):
             "ambient_adjust_sec": float(_env_or_yaml("AMBIENT_ADJUST_SEC", yaml_cfg, 0.5)),
             "listen_timeout": int(_env_or_yaml("LISTEN_TIMEOUT", yaml_cfg, 10)),
             "phrase_time_limit": int(_env_or_yaml("PHRASE_TIME_LIMIT", yaml_cfg, 7)),
+            "news_api_key": _env_or_yaml("NEWS_API_KEY", yaml_cfg, ""),
         }
         if USE_PYDANTIC:
             try:

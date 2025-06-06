@@ -10,6 +10,7 @@ An advanced, production-grade voice assistant built with Python. Features modula
 - Voice response synthesis (ElevenLabs, pyttsx3 fallback)
 - Conversation memory management
 - **Plugin system**: Easily add new skills/tools
+- Built-in reminders, todo list, and news headlines plugins
 - **Advanced configuration**: Supports `.env` and `config.yaml`
 - Robust error handling and centralized logging
 - Fully type-annotated, documented, and tested
@@ -52,12 +53,14 @@ The assistant loads configuration from `.env` and/or `config.yaml`, with environ
 ```
 OPENAI_API_KEY=your_openai_key
 ELEVENLABS_API_KEY=your_elevenlabs_key
+NEWS_API_KEY=your_news_api_key
 ```
 
 **Example `config.yaml`**
 ```yaml
 openai_api_key: your_openai_key
 elevenlabs_api_key: your_elevenlabs_key
+news_api_key: your_news_api_key
 voice_id: AwbZ3Leiit6t97L6NM4u
 wake_words:
   - hey assistant
@@ -98,6 +101,17 @@ remind me to buy milk at 6pm
 ```
 
 The assistant will speak the reminder at the requested time while running.
+
+### Todo and News Plugins
+
+Additional plugins provide a simple todo list and latest news headlines.
+Use commands such as:
+
+```
+add buy milk to my todo list
+list my todo list
+news
+```
 
 ## Usage
 
