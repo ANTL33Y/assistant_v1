@@ -1,4 +1,3 @@
-import type { Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 
 export default {
@@ -29,4 +28,4 @@ export default {
       },
     })
   })],
-} satisfies Config
+}
