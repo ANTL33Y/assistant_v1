@@ -10,7 +10,12 @@ interface ChatMessageProps {
 
 export function ChatMessage({ author, content }: ChatMessageProps) {
   return (
-    <motion.div className="space-y-2">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-2"
+    >
       <div className="text-sm font-bold text-muted">{author}</div>
       <div className="prose prose-invert max-w-none text-base leading-relaxed">
         <ReactMarkdown
@@ -34,7 +39,12 @@ export function ChatMessage({ author, content }: ChatMessageProps) {
               )
             },
             img(props) {
-              return <img className="w-48 rounded-lg border border-white/10" {...props} />
+              return (
+                <img
+                  className="w-[200px] rounded-lg border border-white/10"
+                  {...props}
+                />
+              )
             }
           }}
         >
