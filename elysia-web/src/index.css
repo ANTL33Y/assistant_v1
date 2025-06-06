@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Markdown formatting tweaks */
+.prose pre {
+  @apply bg-gray-100 dark:bg-gray-800 p-4 rounded;
+}
