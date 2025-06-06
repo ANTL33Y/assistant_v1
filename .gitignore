@@ -42,7 +42,3 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Node
-web/node_modules/
-web/dist/
-web/.vite/
