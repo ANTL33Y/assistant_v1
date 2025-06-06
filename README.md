@@ -157,3 +157,10 @@ pytest
 ## License
 
 MIT License
+
+## Running everything
+```bash
+python main.py          # dev mode (hot reload)
+python main.py --prod   # production
+```
+The script spins up both the FastAPI backend and the Vite front-end automatically.
