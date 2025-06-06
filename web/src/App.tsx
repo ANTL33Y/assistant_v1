@@ -16,6 +16,7 @@ export default function App() {
   return (
     <div className="flex h-screen text-[#E8EAEE]">
       <Sidebar items={["First chat", "Second chat"]} />
+      <Sidebar mobile items={["First chat", "Second chat"]} />
       <main className="flex-1 flex flex-col bg-chat-gradient p-6 overflow-y-auto space-y-6">
         <div className="flex-1 space-y-6">
           {messages.map((m, i) => (
