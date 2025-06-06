@@ -24,7 +24,7 @@ class PersonalAI:
     The main orchestrator for the modular voice assistant.
     Handles command processing, plugin management, and integration with memory, LLM, and voice I/O.
     """
-    def __init__(self, cfg: Settings = Settings()) -> None:
+    def __init__(self, cfg: Settings = Settings(), voice_io: VoiceIO | None = None) -> None:
         """
         Initialize the PersonalAI assistant.
         Args:
@@ -32,7 +32,7 @@ class PersonalAI:
         """
         self.cfg = cfg
         self.memory = Memory(cfg.memory_path, cfg.max_interactions)
-        self.voice = VoiceIO(cfg)
+        self.voice = voice_io if voice_io else VoiceIO(cfg)
         self.llm = LLMClient(cfg, self.memory)
         self.semantic = SemanticMemory(self.memory, cfg)
         self.logger = get_logger(__name__)
