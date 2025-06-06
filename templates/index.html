@@ -9,72 +9,116 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .chat-scroll::-webkit-scrollbar { width: 8px; }
-        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 6px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 6px; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-100 to-slate-200 min-h-screen flex flex-col">
-<header class="bg-white shadow">
-    <div class="max-w-3xl mx-auto py-4 px-4">
-        <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">Voice Assistant</h1>
-    </div>
-</header>
-<main class="flex-grow flex items-center justify-center">
-    <div id="root" class="w-full max-w-3xl p-4"></div>
-</main>
+<body class="bg-gradient-to-br from-gray-800 via-gray-900 to-black min-h-screen text-gray-200">
+<div class="h-screen flex">
+    <div id="root" class="flex-1 flex"></div>
+</div>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 <script type="text/babel">
 function ChatApp(){
-  const [messages, setMessages] = React.useState([]);
+  const [threads, setThreads] = React.useState(() => {
+    const saved = localStorage.getItem('threads');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [current, setCurrent] = React.useState(() => {
+    return threads.length ? threads.length - 1 : null;
+  });
 
   React.useEffect(() => {
-    fetch('/history').then(r=>r.json()).then(data=>{
-      setMessages(data);
-      setTimeout(scrollBottom, 100);
-    });
-  }, []);
+    localStorage.setItem('threads', JSON.stringify(threads));
+  }, [threads]);
 
   const scrollBottom = () => {
     const el = document.getElementById('messages');
     if(el) el.scrollTop = el.scrollHeight;
   };
 
+  const newChat = () => {
+    const t = {id: Date.now(), messages: []};
+    setThreads(prev => [...prev, t]);
+    setCurrent(threads.length);
+  };
+
+  const addMessage = (msg) => {
+    setThreads(prev => {
+      const arr = [...prev];
+      if(current === null) return arr;
+      arr[current].messages.push(msg);
+      return arr;
+    });
+  };
+
   const send = () => {
     const input = document.getElementById('input');
     const text = input.value.trim();
-    if(!text) return;
-    setMessages(prev => [...prev, {type:'user', content:text}]);
+    if(!text || current === null) return;
+    addMessage({type:'user', content:text});
     input.value='';
     fetch('/chat', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({message:text})
     }).then(r=>r.json()).then(data=>{
-      setMessages(prev => [...prev, {type:'ai', content:data.response}]);
+      addMessage({type:'ai', content:data.response});
       scrollBottom();
     });
   };
 
+  const dictate = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition) return;
+    const rec = new SpeechRecognition();
+    rec.lang = 'en-US';
+    rec.onresult = (e) => {
+      document.getElementById('input').value = e.results[0][0].transcript;
+    };
+    rec.start();
+  };
+
+  const messages = current === null ? [] : threads[current].messages;
+
   return (
-    <div className="h-full flex flex-col bg-white rounded-xl shadow-lg overflow-hidden">
-      <div id="messages" className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
-        {messages.map((m,i)=>(
-          <div key={i} className={`flex ${m.type==='user'?'justify-end':'justify-start'}`}>
-            <div className={
-              'px-4 py-2 rounded-xl max-w-[75%] text-sm ' +
-              (m.type==='user'?'bg-blue-600 text-white':'bg-gray-100 text-gray-900')
-            }>
-              {m.content}
+    <>
+      <aside className="w-64 bg-gray-900 p-4 flex flex-col">
+        <h2 className="text-lg font-semibold mb-4">Chats</h2>
+        <div className="flex-1 overflow-y-auto space-y-2">
+          {threads.map((t,i)=> (
+            <button key={t.id} onClick={()=>setCurrent(i)} className={'w-full text-left px-3 py-2 rounded-md '+(i===current?'bg-gray-700':'bg-gray-800 hover:bg-gray-700')}>
+              Chat {i+1}
+            </button>
+          ))}
+        </div>
+        <button onClick={newChat} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md">New Chat</button>
+      </aside>
+      <div className="flex-1 flex flex-col bg-gray-800 rounded-xl shadow-lg overflow-hidden ml-4">
+        <div id="messages" className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+          {messages.map((m,i)=>(
+            <div key={i} className={`flex ${m.type==='user'?'justify-end':'justify-start'}`}>
+              <div className={
+                'px-4 py-2 rounded-xl max-w-[75%] text-sm ' +
+                (m.type==='user'?'bg-blue-600 text-white':'bg-gray-700 text-white')
+              }>
+                {m.content}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="border-t border-gray-700 p-3 flex gap-2">
+          <input id="input" type="text" placeholder="Ask something..." autoComplete="off" onKeyDown={e=>e.key==='Enter'&&send()} className="flex-1 bg-gray-700 text-white border border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button onClick={dictate} className="bg-gray-700 hover:bg-gray-600 text-white rounded-md px-3 flex items-center" title="Speak">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 1v11m0 0a3 3 0 01-3-3V5a3 3 0 116 0v4a3 3 0 01-3 3zm0 0v4m5 0H7" />
+            </svg>
+          </button>
+          <button onClick={send} className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium hover:bg-blue-700">Send</button>
+        </div>
       </div>
-      <div className="border-t p-3 flex gap-2">
-        <input id="input" type="text" placeholder="Ask something..." autoComplete="off" onKeyDown={e=>e.key==='Enter'&&send()} className="flex-1 border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button onClick={send} className="bg-blue-600 text-white rounded-md px-4 py-2 font-medium hover:bg-blue-700">Send</button>
-      </div>
-    </div>
+    </>
   );
 }
 ReactDOM.createRoot(document.getElementById('root')).render(<ChatApp/>);
