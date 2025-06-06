@@ -46,6 +46,8 @@ class Settings(BaseModel if USE_PYDANTIC else object):
     listen_timeout: int = 10
     phrase_time_limit: int = 7
     news_api_key: str = ""
+    weather_api_key: str = ""
+    default_location: str = "New York"
 
     @property
     def tts_url(self) -> str:
@@ -68,6 +70,8 @@ class Settings(BaseModel if USE_PYDANTIC else object):
             "listen_timeout": int(_env_or_yaml("LISTEN_TIMEOUT", yaml_cfg, 10)),
             "phrase_time_limit": int(_env_or_yaml("PHRASE_TIME_LIMIT", yaml_cfg, 7)),
             "news_api_key": _env_or_yaml("NEWS_API_KEY", yaml_cfg, ""),
+            "weather_api_key": _env_or_yaml("WEATHER_API_KEY", yaml_cfg, ""),
+            "default_location": _env_or_yaml("DEFAULT_LOCATION", yaml_cfg, "New York"),
         }
         if USE_PYDANTIC:
             try:
