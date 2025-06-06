@@ -18,7 +18,6 @@ An advanced, production-grade voice assistant built with Python. Features modula
 ## Requirements
 
 - Python 3.8+
-- Node.js 18+ (for the React UI)
 - OpenAI API key
 - (Optional) ElevenLabs API key for high-quality TTS
 - Required Python packages (see requirements.txt)
@@ -41,13 +40,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```bash
 pip install -r requirements.txt
 ```
-4. Install front-end dependencies:
-```bash
-cd web && npm install
-cd ..
-```
-
-5. Configure your environment:
+4. Configure your environment:
 
 - Copy `.env.example` to `.env` and fill in your API keys, or
 - Create a `config.yaml` for advanced configuration (see below)
@@ -137,7 +130,7 @@ news
 
 ## Usage
 
-Run the main script. This will launch the React UI at http://localhost:5173:
+Run the assistant from the command line:
 ```bash
 python main.py
 ```
