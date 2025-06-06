@@ -1,13 +1,16 @@
 """
-Entry point for the advanced modular voice assistant.
+Entry point for the voice assistant web interface.
+Running this script starts the Flask GUI and opens it in a browser.
 """
-from src.config import Settings
-from src.assistant import PersonalAI
+import webbrowser
+
+from web_gui import app
+
 
 def main() -> None:
-    cfg = Settings.load()
-    assistant = PersonalAI(cfg)
-    assistant.run()
+    webbrowser.open("http://127.0.0.1:5000")
+    app.run(debug=True)
+
 
 if __name__ == "__main__":
     main()
