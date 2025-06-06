@@ -39,6 +39,7 @@ class Memory:
             "interactions": [],
             "learned_facts": {},
             "reminders": [],
+            "todo_tasks": [],
             "first_meeting": dt.datetime.now().isoformat(),
         }
 
@@ -104,3 +105,27 @@ class Memory:
             self.data["reminders"] = remaining
             self.save()
         return due
+
+    def add_todo(self, text: str) -> None:
+        """Add a todo task."""
+        self.data.setdefault("todo_tasks", []).append(
+            {
+                "id": dt.datetime.now().isoformat(),
+                "text": text,
+                "done": False,
+            }
+        )
+        self.save()
+
+    def list_todo(self) -> List[str]:
+        """Return a list of incomplete todo task texts."""
+        return [t["text"] for t in self.data.get("todo_tasks", []) if not t.get("done")]
+
+    def complete_todo(self, text: str) -> bool:
+        """Mark a todo task as completed."""
+        for task in self.data.get("todo_tasks", []):
+            if task["text"].lower() == text.lower() and not task.get("done"):
+                task["done"] = True
+                self.save()
+                return True
+        return False
