@@ -10,7 +10,7 @@ An advanced, production-grade voice assistant built with Python. Features modula
 - Voice response synthesis (ElevenLabs, pyttsx3 fallback)
 - Conversation memory management
 - **Plugin system**: Easily add new skills/tools
-- Built-in reminders, todo list, and news headlines plugins
+- Built-in reminders, todo list, news headlines, and weather plugins
 - **Advanced configuration**: Supports `.env` and `config.yaml`
 - Robust error handling and centralized logging
 - Fully type-annotated, documented, and tested
@@ -54,6 +54,7 @@ The assistant loads configuration from `.env` and/or `config.yaml`, with environ
 OPENAI_API_KEY=your_openai_key
 ELEVENLABS_API_KEY=your_elevenlabs_key
 NEWS_API_KEY=your_news_api_key
+WEATHER_API_KEY=your_openweather_key
 ```
 
 **Example `config.yaml`**
@@ -61,6 +62,8 @@ NEWS_API_KEY=your_news_api_key
 openai_api_key: your_openai_key
 elevenlabs_api_key: your_elevenlabs_key
 news_api_key: your_news_api_key
+weather_api_key: your_openweather_key
+default_location: New York
 voice_id: AwbZ3Leiit6t97L6NM4u
 wake_words:
   - hey assistant
@@ -79,16 +82,28 @@ Add new skills by dropping plugin files into `src/plugins/`. Each plugin should 
 **Example:**
 ```python
 from src.plugins.base import AssistantPlugin
+import requests
 
 class WeatherPlugin(AssistantPlugin):
     name = "Weather"
-    description = "Provides weather information."
+    description = "Provides live weather information."
+
+    def setup(self, assistant):
+        self.api_key = getattr(assistant.cfg, "weather_api_key", "")
+        self.default_location = getattr(assistant.cfg, "default_location", "New York")
+        self.session = requests.Session()
 
     def register(self):
         return {"weather": self.handle_weather}
 
     def handle_weather(self, command: str, *args, **kwargs):
-        return "The weather is sunny and 25°C."
+        location = "london"  # extract from command in real code
+        resp = self.session.get(
+            "https://api.openweathermap.org/data/2.5/weather",
+            params={"q": location, "appid": self.api_key, "units": "metric"},
+        )
+        data = resp.json()
+        return f"{location.title()} is {data['weather'][0]['description']} and {data['main']['temp']}°C"
 ```
 
 ### Built-in Reminder Plugin
