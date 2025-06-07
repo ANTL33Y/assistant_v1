@@ -12,6 +12,7 @@ type Action =
   | { type: 'addMessage'; message: ChatMessage }
   | { type: 'setStreaming'; value: boolean }
   | { type: 'toggleSidebar' }
+  | { type: 'resetMessages' }
 
 const initialState: State = {
   messages: [],
@@ -27,6 +28,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, streaming: action.value }
     case 'toggleSidebar':
       return { ...state, sidebarOpen: !state.sidebarOpen }
+    case 'resetMessages':
+      return { ...state, messages: [] }
     default:
       return state
   }

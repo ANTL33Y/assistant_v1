@@ -4,6 +4,7 @@ import { StoreProvider, useStore } from './store'
 import MessageList from './components/MessageList'
 import PromptBar from './components/PromptBar'
 import { MoonIcon, SunIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useSpeechSynthesis } from './hooks/useSpeechSynthesis'
 
 function Sidebar() {
   const [state, dispatch] = useStore()
@@ -30,9 +31,7 @@ function Sidebar() {
           ✕
         </button>
         <button
-          onClick={() => {
-            dispatch({ type: 'addMessage', message: { id: Date.now().toString(), role: 'assistant', content: 'New chat started' } })
-          }}
+          onClick={() => dispatch({ type: 'resetMessages' })}
           className="p-2 flex items-center gap-1"
         >
           <PlusIcon className="h-4 w-4" /> New Chat
@@ -51,6 +50,7 @@ function Sidebar() {
 function ChatPanel() {
   const [state, dispatch] = useStore()
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const { speak } = useSpeechSynthesis()
 
   useEffect(() => {
     const handleShortcut = (e: KeyboardEvent) => {
@@ -66,6 +66,13 @@ function ChatPanel() {
     window.addEventListener('keydown', handleShortcut)
     return () => window.removeEventListener('keydown', handleShortcut)
   }, [dispatch])
+
+  useEffect(() => {
+    const last = state.messages[state.messages.length - 1]
+    if (last && last.role === 'assistant') {
+      speak(last.content)
+    }
+  }, [state.messages, speak])
 
   return (
     <div className="flex flex-col flex-1 h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 dark:from-[#2b2d30] dark:via-[#202123] dark:to-[#111]">
