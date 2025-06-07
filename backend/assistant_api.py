@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import List
 import os
+import openai
+from src.config import Settings
 
 class ChatMessage(BaseModel):
     id: str
@@ -17,6 +19,8 @@ class ChatRequest(BaseModel):
 
 def create_app(prod: bool = False) -> FastAPI:
     app = FastAPI()
+    cfg = Settings.load()
+    client = openai.OpenAI(api_key=cfg.openai_api_key) if cfg.openai_api_key else None
 
     if prod:
         static_dir = os.path.join(os.path.dirname(__file__), "static")
@@ -38,13 +42,19 @@ def create_app(prod: bool = False) -> FastAPI:
 
     @app.post("/chat")
     async def chat(payload: ChatRequest):
-        """Echo back the last user message from the list."""
-        messages = payload.messages
-        if messages:
-            last = messages[-1].content
-        else:
-            last = ""
-        return {"text": f"You said: {last}"}
+        """Send the chat transcript to OpenAI and return the assistant reply."""
+        if client is None:
+            messages = payload.messages
+            last = messages[-1].content if messages else ""
+            return {"text": f"You said: {last}"}
+        chat_messages = [
+            {"role": m.role, "content": m.content} for m in payload.messages
+        ]
+        resp = client.chat.completions.create(
+            model=cfg.openai_model_name, messages=chat_messages
+        )
+        text = resp.choices[0].message.content.strip()
+        return {"text": text}
 
     @app.post("/speech-to-text")
     async def speech_to_text(file: UploadFile = File(...)):

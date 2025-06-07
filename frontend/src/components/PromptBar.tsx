@@ -12,7 +12,7 @@ inputRef?: React.RefObject<HTMLTextAreaElement>
 }
 
 export default function PromptBar({ onVoiceInput, inputRef }: Props) {
-  const [, dispatch] = useStore()
+  const [state, dispatch] = useStore()
   const [value, setValue] = useState('')
   const [rows, setRows] = useState(1)
   const ref = inputRef ?? useRef<HTMLTextAreaElement>(null)
@@ -23,7 +23,7 @@ export default function PromptBar({ onVoiceInput, inputRef }: Props) {
     dispatch({ type: 'addMessage', message: userMsg })
     setValue('')
     dispatch({ type: 'setStreaming', value: true })
-    const assistantMsg = await sendMessage([...([]), userMsg])
+    const assistantMsg = await sendMessage([...state.messages, userMsg])
     dispatch({ type: 'addMessage', message: assistantMsg })
     dispatch({ type: 'setStreaming', value: false })
   }
