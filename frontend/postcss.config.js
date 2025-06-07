@@ -1,7 +1,7 @@
 // PostCSS configuration using Tailwind CSS
 export default {
   plugins: {
-    tailwindcss: {},
+    '@tailwindcss/postcss': {},
     autoprefixer: {}
   }
 }
