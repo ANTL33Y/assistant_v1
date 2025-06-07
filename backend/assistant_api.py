@@ -11,6 +11,10 @@ class ChatMessage(BaseModel):
     content: str
 
 
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage] = []
+
+
 def create_app(prod: bool = False) -> FastAPI:
     app = FastAPI()
 
@@ -33,8 +37,9 @@ def create_app(prod: bool = False) -> FastAPI:
         return {"status": "ok"}
 
     @app.post("/chat")
-    async def chat(messages: List[ChatMessage]):
-        # Simple echo-style reply using last user message
+    async def chat(payload: ChatRequest):
+        """Echo back the last user message from the list."""
+        messages = payload.messages
         if messages:
             last = messages[-1].content
         else:

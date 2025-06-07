@@ -68,7 +68,7 @@ function ChatPanel() {
   }, [dispatch])
 
   return (
-    <div className="flex flex-col flex-1 h-screen">
+    <div className="flex flex-col flex-1 h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100 dark:from-[#2b2d30] dark:via-[#202123] dark:to-[#111]">
       <div className="flex-1 flex flex-col">
         <MessageList messages={state.messages} />
       </div>

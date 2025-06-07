@@ -13,7 +13,12 @@ export default function ChatMessage({ message }: Props) {
     'bg-white dark:bg-[#343541] border border-gray-300/60 dark:border-[#3e3f4b] self-end'
   const assistantStyles = 'bg-[#f7f7f8] dark:bg-[#444654]'
   return (
-    <div className={clsx('my-2 flex', isUser ? 'justify-end' : 'justify-start')}>
+    <div
+      className={clsx(
+        'my-2 flex animate-fade-in',
+        isUser ? 'justify-end' : 'justify-start'
+      )}
+    >
       <div className={clsx(base, isUser ? userStyles : assistantStyles)}>
         {message.content}
       </div>
